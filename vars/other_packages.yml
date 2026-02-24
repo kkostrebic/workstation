@@ -1,0 +1,78 @@
+---
+flatpak_packages:
+  - org.mozilla.firefox  # web browser https://flathub.org/en/apps/org.mozilla.firefox
+  - org.torproject.torbrowser-launcher  # web browser
+  - com.bitwarden.desktop  # password manager https://flathub.org/en/apps/com.bitwarden.desktop
+  - org.gimp.GIMP  # image manipulation program https://flathub.org/en/apps/org.gimp.GIMP
+  - org.inkscape.Inkscape  # vector graphics editor https://flathub.org/en/apps/org.inkscape.Inkscape
+  # - org.videolan.VLC  # (not verified?) media player https://flathub.org/en/apps/org.videolan.VLC
+  - org.libreoffice.LibreOffice  # office suite https://flathub.org/en/apps/org.libreoffice.LibreOffice
+  - org.mozilla.Thunderbird  # email, newsfeed, chat and calendaring client https://flathub.org/en/apps/org.mozilla.Thunderbird
+  - com.discordapp.Discord  # messaging, voice and video client https://flathub.org/en/apps/com.discordapp.Discord
+  # - org.libretro.RetroArch  # frontend for emulators, game engines and media players https://flathub.org/en/apps/org.libretro.RetroArch
+  # - io.dbeaver.DBeaverCommunity  # (not verified?) multi-platform database tool/client https://flathub.org/en/apps/io.dbeaver.DBeaverCommunity
+  # - org.darktable.Darktable  # (not verified?) organize and develop images from digital cameras https://flathub.org/en/apps/org.darktable.Darktable
+
+mise_env:
+  MISE_NODE_COMPILE: false   # https://mise.jdx.dev/lang/node.html#node.compile
+  MISE_PYTHON_COMPILE: false # https://mise.jdx.dev/lang/python.html#python.compile
+  MISE_RUBY_COMPILE: false   # https://mise.jdx.dev/lang/ruby.html#ruby.compile
+
+mise_packages:
+  # programming languages and runtimes
+  - node@lts
+  - python@3
+  - go@1.26
+  - ruby@4
+  - java@21
+  - kotlin@1.6
+  - lua@5.5
+  - rust@stable
+  # formatting (system-wide) 
+  - shfmt@latest      # Shell parser, formatter, and interpreter with bash support; includes shfmt. https://github.com/mvdan/sh
+  # linting/static analysis (system-wide)
+  - shellcheck@latest # Finds bugs in your shell scripts
+  - hadolint@latest   # Dockerfile linter, validate inline bash https://github.com/hadolint/hadolint
+  - ruff@latest       # Fast Python linter and code formatter https://github.com/astral-sh/ruff
+  - actionlint@latest # Static checker for GitHub Actions workflow files https://github.com/rhysd/actionlint
+  # security
+  - trivy@latest      # Find vulnerabilities, misconfigurations, secrets, SBOM in containers, Kubernetes, code repositories, clouds... https://github.com/aquasecurity/trivy
+  - kube-score@latest # Kubernetes object analysis with recommendations for improved reliability and security https://github.com/zegl/kube-score
+  # text editor
+  - neovim@stable     # For some reason this installing nvim is more stable than using apt package manager
+
+# https://langserver.org/
+npm_packages:
+  # formatting tools (system-wide)
+  - prettier  # Code formatter (javascript/typescript/json/css/scss/html/markdown)
+  # LSPs
+  - typescript
+  - typescript-language-server
+  - bash-language-server
+  - yaml-language-server
+  - vscode-json-languageserver
+  - vscode-html-languageserver-bin
+  - vscode-css-languageserver-bin
+  - dockerfile-language-server-nodejs
+ 
+pip_packages:
+  - ansible-dev-tools # Set of tools to create Ansible content, ansible-(builder|core|creator|dev-environment|lint|navigator) https://docs.ansible.com/projects/dev-tools/
+  # linting/static analysis (system-wide)
+  - yamllint          # Linter for YAML files https://github.com/adrienverge/yamllint
+  - sqlfluff          # Linter for SQL https://github.com/sqlfluff/sqlfluff
+  # LSP
+  - python-lsp-server
+
+gem_packages:
+  # LSP
+  - solargraph  # Ruby language server https://github.com/castwide/solargraph
+
+go_packages:
+  # LSP
+  - golang.org/x/tools/gopls@latest  # language server for golang https://go.dev/gopls/
+
+cargo_packages:
+  - tlrc  # Official tldr client
+
+container_images:
+  - docker.io/checkmarx/kics:latest  # Find security vulnerabilities, compliance issues, and infrastructure misconfigurations https://github.com/Checkmarx/kics

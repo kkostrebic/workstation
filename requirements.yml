@@ -1,0 +1,14 @@
+---
+# Documentation:
+# https://docs.ansible.com/ansible/latest/galaxy/user_guide.html
+# Installing galaxy roles and collections:
+# https://docs.ansible.com/ansible/latest/collections_guide/collections_installing.html#install-multiple-collections-with-a-requirements-file
+#
+# $ ansible-galaxy collection install -r requirements.yaml
+# # ansible-galaxy role install -r requirements.yaml
+
+collections:
+  - name: community.general
+    version: 12.3.0
+  - name: containers.podman
+    version: 1.18.1

@@ -1,0 +1,261 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars/apt_repositories.yml
+    - vars/debian_packages.yml
+    - vars/other_packages.yml
+
+  handlers:
+    - name: restart polkit
+      become: true
+      systemd:
+        name: polkit
+        state: restarted
+
+  tasks:
+    - name: System-specific tasks
+      become: true
+      block:
+        - name: Configure additional apt repositories
+          ansible.builtin.deb822_repository:
+            name: "{{ item.name }}"
+            types: deb
+            uris: "{{ item.uris }}"
+            suites: "{{ item.suites }}"
+            components: "{{ item.components }}"
+            signed_by: "{{ item.signed_by }}"
+            state: present
+          loop: "{{ apt_repositories }}"
+          register: configuration_apt_repositories_result
+
+          # Update apt cache if apt respositories are updated/changed
+        - name: Update apt cache
+          ansible.builtin.apt:
+            update_cache: true
+          when: configuration_apt_repositories_result.changed
+
+        - name: Install debian/apt packages
+          tags: apt_packages
+          ansible.builtin.apt:
+            install_recommends: false
+            name: "{{ item }}"
+          loop: >
+            {{
+              core +
+              network +
+              storage +
+              xorg +
+              i3wm +
+              audio +
+              laptop +
+              virtualization +
+              containerization +
+              flatpak +
+              development +
+              utils +
+              bluetooth +
+              fonts
+            }}
+
+        # Install larger desktop apps system wide (using flatpak)
+        - name: Flatpak apps
+          block:
+              # Flatpak is installed via apt package manager
+            - name: Ensure Flatpak is installed
+              ansible.builtin.apt:
+                name: flatpak
+                state: present
+
+            - name: Add Flathub repo if missing
+              community.general.flatpak_remote:
+                name: flathub
+                flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+                method: system
+                state: present
+
+            - name: Install Flatpak apps
+              community.general.flatpak:
+                name: "{{ item }}"
+                remote: flathub
+                method: system
+                state: present
+              loop: "{{ flatpak_packages }}"
+
+        - name: Set policies (polkit)
+          block:
+            - name: Create Polkit rules directory
+              file:
+                path: /etc/polkit-1/rules.d
+                state: directory
+                mode: '0755'
+            
+              # NOTE: This probably should go to some template file, but for
+              # the simplicity sake I'm keeping it as a part of this playbook
+            - name: Deploy Polkit rules
+              copy:
+                content: |
+                  // Define admin group (by default sudo)
+                  polkit.addAdminRule(function(action, subject) {
+                      return ["unix-group:sudo"];
+                  });
+                  
+                  // Power management for all users
+                  polkit.addRule(function(action, subject) {
+                      if (action.id == "org.freedesktop.login1.power-off" ||
+                          action.id == "org.freedesktop.login1.reboot" ||
+                          action.id == "org.freedesktop.login1.hibernate" ||
+                          action.id == "org.freedesktop.login1.suspend") {
+                          return polkit.Result.YES;
+                      }
+                  });
+                  
+                  // Storage management for admin group
+                  polkit.addRule(function(action, subject) {
+                      if (action.id.indexOf("org.freedesktop.udisks2.") == 0 &&
+                          subject.isInGroup("sudo")) {
+                          return polkit.Result.YES;
+                      }
+                  });
+
+                  // Slightly modified rule from gnome-control-center
+                  polkit.addRule(function(action, subject) {
+                      if ((action.id == "org.freedesktop.locale1.set-locale" ||
+                           action.id == "org.freedesktop.locale1.set-keyboard" ||
+                           action.id == "org.freedesktop.hostname1.set-static-hostname" ||
+                           action.id == "org.freedesktop.hostname1.set-hostname") &&
+                          subject.local &&
+                          subject.active &&
+                          subject.isInGroup ("sudo")) {
+                                  return polkit.Result.YES;
+                          }
+                  });
+                dest: /etc/polkit-1/rules.d/10-debian-workstation.rules
+                owner: root
+                group: root
+                mode: '0644'
+              notify: restart polkit
+
+    
+      # These are user specific/centric tasks that do not need
+      # additional privileges. Additionally, certain things are assumed
+      # that are installed, like flatpak, mise, npm, etc. Maybe it
+      # should be changed to check if those are installed or not, but at
+      # the moment it's not a concern
+    - name: User-specific tasks
+      block:
+          # Mostly programming language packages 
+        - name: Install mise packages
+          tags: mise_packages
+          ansible.builtin.command: "mise use --global {{ item }}"  # Just set/use these packages as global, diff settings can be achieved through mise configuration files 
+          environment: "{{ mise_env }}"
+          loop: "{{ mise_packages }}"
+
+          # Mainly language servers and/or linters
+        - name: Install npm packages
+          # https://docs.ansible.com/projects/ansible/latest/collections/community/general/npm_module.html
+          community.general.npm:
+            name: "{{ item }}"
+            state: present
+            global: true
+          environment:
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+          loop: "{{ npm_packages }}"
+
+        - name: Install gem based packages
+          # https://docs.ansible.com/projects/ansible/latest/collections/community/general/gem_module.html
+          community.general.gem:
+            name: "{{ item }}"
+            state: present
+            user_install: false  # make it global
+          environment:
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+          loop: "{{ gem_packages }}"
+
+        - name: Install pip based packages
+          # https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/pip_module.html
+          ansible.builtin.pip:
+            name: "{{ item }}"
+            state: present
+          environment:
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+          loop: "{{ pip_packages }}"
+
+        - name: Install golang based packages
+          ansible.builtin.shell: "go install {{ item }}"
+          environment:
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+          loop: "{{ go_packages }}"
+
+        - name: Install cargo based packages
+          tags: cargo_packages
+          community.general.cargo:
+            name: "{{ item }}"
+            state: present
+          environment:
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+          loop: "{{ cargo_packages }}"
+
+        - name: Pull container images
+          containers.podman.podman_image:
+            name: "{{ item }}"
+          loop: "{{ container_images }}"
+
+
+          # Override vars from outside if needed 
+          # $ ansible-playbook --tags dotfiles --extra-vars "dotfiles_force=true dotfiles_git_branch=workstation" workstation.yml
+        - name: Set up dot files (configs)
+          tags: dotfiles
+          vars:
+            # NOTE: If using setup script these variables will be overriden by
+            #       values from that script
+            dotfiles_git_url: "https://github.com/kkostrebic/dotfiles.git"
+            dotfiles_git_branch: "main"
+            dotfiles_dir: "{{ ansible_facts['env']['HOME'] }}/projects/dotfiles"
+            dotfiles_dest: "{{ ansible_facts['env']['HOME'] }}"
+            dotfiles_exclude_patterns: "/\\.git/"
+            dotfiles_force: false
+          block:
+            - name: Ensure dotfiles repo is cloned
+              ansible.builtin.git:
+                repo: "{{ dotfiles_git_url }}"
+                dest: "{{ dotfiles_dir }}"
+                version: "{{ dotfiles_git_branch }}"
+                update: yes
+
+            - name: Find all files in repo
+              ansible.builtin.find:
+                paths: "{{ dotfiles_dir }}"
+                recurse: true
+                file_type: file
+                hidden: true
+              register: dotfiles_found
+
+              # Get file objects from repo
+              # map to full file path
+              # reject ones that match pattern (e.g. skip files inside .git dir)
+              # remove dotfiles dir from path
+            - name: Filter only configuration files that matter
+              ansible.builtin.set_fact:
+                filtered_files: >-
+                  {{
+                    dotfiles_found.files
+                    | map(attribute='path')
+                    | reject('search', dotfiles_exclude_patterns)
+                    | map('regex_replace', dotfiles_dir, '')
+                  }}
+
+            - name: Ensure all directories exist for dotfiles
+              ansible.builtin.file:
+                path: "{{ dotfiles_dest + item | dirname }}"
+                state: directory
+                mode: '0755'
+              loop: "{{ filtered_files }}"
+
+            - name: Create symlinks for dotfiles
+              ansible.builtin.file:
+                src: "{{ dotfiles_dir + item }}"
+                dest: "{{ dotfiles_dest + item }}"
+                state: link
+                force: "{{ dotfiles_force }}"
+              loop: "{{ filtered_files }}"
+

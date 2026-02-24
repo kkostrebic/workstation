@@ -1,0 +1,15 @@
+apt_repositories:
+  # https://mise.jdx.dev/getting-started.html#installing-mise-cli
+  - name: mise
+    components: "main"
+    uris: "https://mise.jdx.dev/deb"
+    signed_by: "https://mise.jdx.dev/gpg-key.pub"
+    suites: stable
+
+  # https://docs.docker.com/engine/install/debian/
+  - name: docker
+    components: "stable"
+    uris: "https://download.docker.com/linux/debian"
+    signed_by: "https://download.docker.com/linux/debian/gpg"
+    suites: "{{ ansible_facts['distribution_release'] }}"  # e.g. VERSION_CODENAME from /etc/os-release
+

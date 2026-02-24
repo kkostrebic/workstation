@@ -1,0 +1,240 @@
+---
+core:
+  - "linux-headers-{{ ansible_facts['kernel'] }}"  # Linux headers (requirements e.g. for nvidia drivers)
+  - ca-certificates    # SSL/TLS root certificates for HTTPS/secure downloads
+  - cron               # Scheduled job execution daemon
+  - dbus               # Message bus system (required for modern services and X)
+  - locales            # Language and regional settings
+  - logrotate          # Automatic rotation, compression, and cleanup of logs
+  - sudo               # Execute commands as another user (admin privileges)
+  - tzdata             # Timezone data for system clock
+
+network:
+  - ethtool            # NIC configuration and diagnostics
+  - iproute2           # Modern networking tools (ip, ss, tc, etc.)
+  - iw                 # Wi-Fi device configuration and scanning
+  - network-manager    # Network connection management (wired, Wi-Fi, VPN)
+
+bluetooth:
+  - bluez                # Bluetooth tools and daemons
+  - blueman              # Lightweight Bluetooth manager (GTK)
+
+storage:
+  - udev               # Device manager (required for dynamic device handling)
+  - udisks2            # Disk and removable media management
+  - cifs-utils         # Mount and manage CIFS/SMB network shares
+  - gphotofs           # FUSE filesystem for accessing cameras
+  - udiskie            # automount removable drives
+  # - mdadm              # Software RAID management tool
+  # - samba              # SMB/CIFS file and print sharing
+
+development:
+  - apache2-utils      # Apache utility tools (ab, htpasswd, etc.)
+  - subversion         # Subversion version control system
+  - autoconf           # Generate portable configure scripts
+  - automake           # Generate Makefile.in from Makefile.am
+  - build-essential    # Compiler, make, libc-dev (core build tools)
+  - dh-autoreconf      # Automatically run autoreconf in debhelper
+  - git                # Distributed version control system
+  - module-assistant   # Build and install kernel modules (important for VM Guest Additions), bzip2, xz-utils (compression utilities), perl
+  - tig                # Terminal-based Git repository browser
+  - tmux               # Terminal multiplexer (split panes, sessions)
+  - universal-ctags    # Parses source code and produces a sort of index mapping the names of significant entities (e.g. functions, classes, variables)
+  - libyaml-dev        # Fast YAML parser (dev headers and static files, build purposes, e.g. ruby)
+
+utils:
+  # monitoring and system utilities
+  - util-linux         # Package of utilities by Linux Kernel Organisation (list of utils here: https://en.wikipedia.org/wiki/Util-linux)
+  - acpi               # Power management and battery/thermal info
+  - htop               # Interactive process viewer
+  - iotop              # Real-time I/O usage monitoring
+  - ncdu               # Disk usage analyzer in terminal
+  - smartmontools      # Monitor and report disk health via SMART
+  # network
+  - curl                # Fetch files or APIs from command line
+  - wget                # Download files from web
+  - traceroute          # Trace network path to a host
+  - mtr                 # Interactive traceroute + ping
+  - nmap                # Network scanning and discovery
+  - tcpdump             # CLI packet capture
+  - iftop               # Network bandwidth monitor
+  - rsync               # File synchronization and backups
+  - ssh-askpass         # Under X, asks user for a passphrase for ssh-add
+  # file management
+  - ranger              # Vim-like terminal file manager
+  - bat                 # Improved `cat` with syntax highlighting
+  - ripgrep             # Fast recursive search (like grep)
+  - unzip               # Extract zip archives
+  - tar                 # Archive/extract tarballs
+  - 7zip                # 7z archive support
+  - tree                # Visual directory tree display
+  - thunar              # GUI file manager (xfce)
+  - thunar-volman       # Frontend helper: reacts to USB insertion, automounts, opens Thunar
+  - gvfs                # Mounting, trash, smb, mtp, archives, etc.
+  # printing, scanning, images & media
+  - cups                    # Printing system
+  - sane-utils              # Scanner utils
+  - xsane                   # GUI for sane (scanner)
+  - imagemagick             # Convert, resize, manipulate images
+  - nsxiv                   # Simple X image viewer
+  - feh                     # Lightweight image viewer / wallpaper setter
+  - mpv                     # Terminal-friendly video player
+  - ffmpeg                  # Video/audio conversion and streaming
+  - libimage-exiftool-perl  # Read/write image and media metadata
+  - libmagickwand-dev       # ImageMagick MagickWand development files
+  - dcraw                   # Decode raw digital camera images (used by other apps like GIMP)
+  - playerctl               # CLI controller for media players via MPRIS (DBus)
+  # screen- shots & recording
+  - slop                 # Select screen region interactively
+  - maim                 # Takes screenshots of your desktop
+  - simplescreenrecorder # Video screen recorder
+  # notifications
+  - dunst                # Lightweight notification daemon (perfect for i3)
+  - libnotify-bin        # notify-send CLI tool
+  # display
+  - arandr               # Simple GUI for monitor layouts
+  # clipboard management
+  - xclip                # CLI clipboard access
+  - diodon               # GTK+ Clipboard manager
+  # documents
+  - pandoc               # Convert Markdown ↔ PDF/HTML/DOCX
+  - mupdf                # lightweight/raw PDF viewer
+  - zathura              # Minimal PDF viewer (wrapper around mupdf)
+  # calendar
+  - calcurse    # excellent TUI calendar + tasks
+  - gsimplecal # tiny GTK calendar popup
+  # text editors
+  - mousepad           # Mousepad is a graphical text editor for Xfce
+  # backup
+  - borgbackup          # Deduplicating and compressing backup program
+  - borgmatic           # Automatically create, prune and verify backups with borgbackup
+  # policies
+  - polkitd             # Polkit is an application-level toolkit for defining and handling the policy that allows unprivileged processes to speak to privileged processes (e.g. let user without sudo to shutdown the computer, manage wireless connections, mount removable media, etc)
+  - lxpolkit            # LXDE PolicyKit authentication agent
+  # misc
+  - alacritty               # GPU-accelerated terminal emulator
+  - stow                    # Symlink-based dotfile / package management
+  - dialog                  # Create text-based dialogs in scripts
+  - fzf                     # Fuzzy finder for terminal
+  - jq                      # JSON parser and query tool
+  - yq                      # YAML parser and query tool
+  - bc                      # CLI calculator
+  - ufw                     # Uncomplicated FireWall is a front-end for iptables
+  - aptitude                # Terminal based apt package manager
+  # Mise is installed from its own apt repository
+  - mise                    # tool version manager
+
+fonts:
+  - fonts-dejavu            # Classic, widely-used TrueType fonts
+  - fonts-jetbrains-mono    # Monospaced font for programming
+  - fonts-inter             # Inter font family
+  - fonts-liberation        # Set of serif, sans-serif and monospaced fonts with exactly the same metrics as the non-free Microsoft fonts Times New Roman, Arial and Courier New
+  - fonts-noto-color-emoji  # Emoji support for modern terminal apps
+  - fonts-font-awesome      # Iconic font (~248 various icon glyphs)
+  - ncurses-term            # Terminal description and capabilities database
+  - fontconfig              # Font management/configuration
+
+nvidia:
+  - libnvidia-encode1              # NVIDIA video encode (NVENC)
+  - nvidia-driver                  # Proprietary NVIDIA driver (best 3D/Vulkan/CUDA)
+  - nvidia-kernel-dkms             # DKMS kernel module build for NVIDIA
+  - nvidia-settings                # NVIDIA config panel (GUI)
+  - nvidia-vdpau-driver            # NVIDIA VDPAU acceleration
+
+# AMD GPU
+# amd:
+#   - mesa                          # Open source 3D/Vulkan graphics
+#   - firmware-amd-graphics         # AMD firmware blobs (non-free firmware)
+#   - mesa-va-drivers               # VA‑API drivers for AMD
+
+# Intel GPU
+# intel:
+#   - mesa                            # Open source 3D/Vulkan graphics
+#   - firmware-intel-graphics         # Firmware for Intel GPUs
+#   - intel-media-va-driver-non-free  # Intel VA‑API media driver
+#   - intel-gpu-tools                 # Intel GPU debug/performance tools
+
+xorg:
+  - xorg               # X Window System core packages (xserver-xorg, xfonts-base, x11-apps, x11-utils, x11-session-utils, x11-xkb-utils, x11-xserver-utils, xinit, xauth, xfonts-utils, xkb-data, xterm, ...)
+  - xserver-xorg-input-libinput # Modern input driver for keyboards/mice
+  - xdg-utils              # gets you 'xdg-open' (the "open anything" command)
+  - xdg-user-dirs          # generates ~/Downloads, ~/Pictures, etc.
+  - xdg-desktop-portal     # the "bridge" for modern app features
+  - xdg-desktop-portal-gtk # the "dialog box" provider for i3/GTK
+  - libfile-mimeinfo-perl  # helps xdg-open actually know what a .pdf is
+  - dex                    # runs your .desktop autostart files
+  # - xdotool             -  fake keyboard/mouse input, window management, etc.
+
+  # XDG post-install steps
+  #
+  # In i3wm, you must manually define your desktop environment so portals know what to do. Add these to your ~/.xinitrc (before exec i3) or your shell profile:
+  # export XDG_CURRENT_DESKTOP=i3
+  # export XDG_SESSION_TYPE=x11
+  #
+  # # 1. Generate your standard home folders
+  # xdg-user-dirs-update
+  #
+  # # 2. Add to your ~/.config/i3/config to fix the "slow app startup" bug
+  # exec --no-startup-id dbus-update-activation-environment --systemd DISPLAY XDG_CURRENT_DESKTOP
+  #
+  # # 3. Test it (should open your browser or file manager)
+  # xdg-open https://google.com
+
+i3wm:
+  - i3-wm              # Tiling window manager
+  - polybar            # Customizable status bar
+  - i3lock             # Simple screen locker for i3
+  - rofi               # Application laucher, window switcher, ssh launcher
+  - lxappearance       # Lightweight tool to configure GTK themes/icons
+  - picom              # Lightweight compositor for shadows, transparency
+  # libanyevent-i3-perl # Perl module to communicate with the i3 window manager (needed in order to save i3 layouts using i3-save-tree command)
+
+audio:
+  - pavucontrol        # GUI volume/mixer
+  - pipewire           # Modern audio and video server
+  - wireplumber        # Session manager for PipeWire
+
+# Laptop-specific extras
+laptop:
+  - tlp                # Advanced power management for laptops
+  - brightnessctl      # Adjust screen/backlight brightness
+  - powertop           # Power usage diagnostics and optimization
+  - autorandr          # Auto-switch monitor profiles
+  - rfkill             # airplane mode / radio kill switch
+
+virtualization:
+  - qemu-system
+  - libvirt-daemon-system
+  - virt-manager
+
+containerization:
+  - buildah              # Build OCI images without Docker daemon
+  - skopeo               # Inspect/copy container images
+  - podman               # manage containers and pods (daemon-less alternative to docker)
+  # These ones are from dedicated docker apt repository:
+  - docker-ce               # The core Docker daemon (Community Edition)
+  - docker-ce-cli           # Command-line interface to interact with the daemon
+  - containerd.io           # The underlying container runtime (industry standard)
+  - docker-buildx-plugin    # Extended build capabilities (multi-platform builds)
+  - docker-compose-plugin   # The modern, native "docker compose" command (V2)
+
+flatpak:
+  # You must ensure XDG_DATA_DIRS includes the Flatpak export paths in your .zshrc or .bashrc
+  - flatpak
+  - flatseal
+  - flatpak-xdg-utils
+
+# Flatpak apps:
+# org.mozilla.Thunderbird
+# org.darktable.Darktable
+# org.gimp.GIMP
+# org.inkscape.Inkscape
+# org.libreoffice.LibreOffice
+# org.mozilla.Firefox
+# org.videolan.VLC
+# rest.insomnia.Insomnia
+# org.wireshark.Wireshark 
+# NOTE (wireshark): 
+#   typical workflow using wireshark with flatpak:
+#   $ sudo tcpdump -i eth0 -w capture.pcap
+#   $ flatpak run org.wireshark.Wireshark capture.pcap
