@@ -14,6 +14,7 @@ network:
   - iproute2           # Modern networking tools (ip, ss, tc, etc.)
   - iw                 # Wi-Fi device configuration and scanning
   - network-manager    # Network connection management (wired, Wi-Fi, VPN)
+  - wireguard          # Fast, modern, secure kernel VPN tunnel
 
 bluetooth:
   - bluez                # Bluetooth tools and daemons
