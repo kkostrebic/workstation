@@ -24,7 +24,8 @@ storage:
   - udev               # Device manager (required for dynamic device handling)
   - udisks2            # Disk and removable media management
   - cifs-utils         # Mount and manage CIFS/SMB network shares
-  - gphotofs           # FUSE filesystem for accessing cameras
+  - jmtpfs             # FUSE based filesystem for accessing MTP (media transfer protocol) devices
+  # - gphotofs           # FUSE filesystem for accessing cameras
   - udiskie            # automount removable drives
   # - mdadm              # Software RAID management tool
   # - samba              # SMB/CIFS file and print sharing
@@ -75,7 +76,8 @@ utils:
   # printing, scanning, images & media
   - cups                    # Printing system
   - sane-utils              # Scanner utils
-  - xsane                   # GUI for sane (scanner)
+  - simple-scan             # Simple scanning utility (GUI)
+  # - xsane                   # GUI for sane (scanner)
   - imagemagick             # Convert, resize, manipulate images
   - nsxiv                   # Simple X image viewer
   - feh                     # Lightweight image viewer / wallpaper setter
@@ -85,6 +87,7 @@ utils:
   - libmagickwand-dev       # ImageMagick MagickWand development files
   - dcraw                   # Decode raw digital camera images (used by other apps like GIMP)
   - playerctl               # CLI controller for media players via MPRIS (DBus)
+  - gphoto2                 # Digital camera command-line client
   # screen- shots & recording
   - slop                 # Select screen region interactively
   - maim                 # Takes screenshots of your desktop
@@ -213,11 +216,11 @@ containerization:
   - skopeo               # Inspect/copy container images
   - podman               # manage containers and pods (daemon-less alternative to docker)
   # These ones are from dedicated docker apt repository:
-  - docker-ce               # The core Docker daemon (Community Edition)
-  - docker-ce-cli           # Command-line interface to interact with the daemon
-  - containerd.io           # The underlying container runtime (industry standard)
-  - docker-buildx-plugin    # Extended build capabilities (multi-platform builds)
-  - docker-compose-plugin   # The modern, native "docker compose" command (V2)
+  # - docker-ce               # The core Docker daemon (Community Edition)
+  # - docker-ce-cli           # Command-line interface to interact with the daemon
+  # - containerd.io           # The underlying container runtime (industry standard)
+  # - docker-buildx-plugin    # Extended build capabilities (multi-platform builds)
+  # - docker-compose-plugin   # The modern, native "docker compose" command (V2)
 
 flatpak:
   # You must ensure XDG_DATA_DIRS includes the Flatpak export paths in your .zshrc or .bashrc

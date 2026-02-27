@@ -7,9 +7,9 @@ apt_repositories:
     suites: stable
 
   # https://docs.docker.com/engine/install/debian/
-  - name: docker
-    components: "stable"
-    uris: "https://download.docker.com/linux/debian"
-    signed_by: "https://download.docker.com/linux/debian/gpg"
-    suites: "{{ ansible_facts['distribution_release'] }}"  # e.g. VERSION_CODENAME from /etc/os-release
+  # - name: docker
+  #   components: "stable"
+  #   uris: "https://download.docker.com/linux/debian"
+  #   signed_by: "https://download.docker.com/linux/debian/gpg"
+  #   suites: "{{ ansible_facts['distribution_release'] }}"  # e.g. VERSION_CODENAME from /etc/os-release
 
