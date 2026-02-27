@@ -1,14 +1,15 @@
 ---
-- hosts: localhost
+- name: Workstation playbook
+  hosts: localhost
   vars_files:
     - vars/apt_repositories.yml
     - vars/debian_packages.yml
     - vars/other_packages.yml
 
   handlers:
-    - name: restart polkit
+    - name: Restart polkit
       become: true
-      systemd:
+      ansible.builtin.systemd:
         name: polkit
         state: restarted
 
@@ -28,15 +29,10 @@
           loop: "{{ apt_repositories }}"
           register: configuration_apt_repositories_result
 
-          # Update apt cache if apt respositories are updated/changed
-        - name: Update apt cache
-          ansible.builtin.apt:
-            update_cache: true
-          when: configuration_apt_repositories_result.changed
-
         - name: Install debian/apt packages
           tags: apt_packages
           ansible.builtin.apt:
+            update_cache: true
             install_recommends: false
             name: "{{ item }}"
           loop: >
@@ -60,7 +56,7 @@
         # Install larger desktop apps system wide (using flatpak)
         - name: Flatpak apps
           block:
-              # Flatpak is installed via apt package manager
+            # Flatpak is installed via apt package manager
             - name: Ensure Flatpak is installed
               ansible.builtin.apt:
                 name: flatpak
@@ -84,21 +80,21 @@
         - name: Set policies (polkit)
           block:
             - name: Create Polkit rules directory
-              file:
+              ansible.builtin.file:
                 path: /etc/polkit-1/rules.d
                 state: directory
                 mode: '0755'
-            
-              # NOTE: This probably should go to some template file, but for
-              # the simplicity sake I'm keeping it as a part of this playbook
+
+            # NOTE: This probably should go to some template file, but for
+            # the simplicity sake I'm keeping it as a part of this playbook
             - name: Deploy Polkit rules
-              copy:
+              ansible.builtin.copy:
                 content: |
                   // Define admin group (by default sudo)
                   polkit.addAdminRule(function(action, subject) {
                       return ["unix-group:sudo"];
                   });
-                  
+
                   // Power management for all users
                   polkit.addRule(function(action, subject) {
                       if (action.id == "org.freedesktop.login1.power-off" ||
@@ -108,7 +104,7 @@
                           return polkit.Result.YES;
                       }
                   });
-                  
+
                   // Storage management for admin group
                   polkit.addRule(function(action, subject) {
                       if (action.id.indexOf("org.freedesktop.udisks2.") == 0 &&
@@ -133,20 +129,20 @@
                 owner: root
                 group: root
                 mode: '0644'
-              notify: restart polkit
+              notify: Restart polkit
 
-    
-      # These are user specific/centric tasks that do not need
-      # additional privileges. Additionally, certain things are assumed
-      # that are installed, like flatpak, mise, npm, etc. Maybe it
-      # should be changed to check if those are installed or not, but at
-      # the moment it's not a concern
+    # These are user specific/centric tasks that do not need
+    # additional privileges. Additionally, certain things are assumed
+    # that are installed, like flatpak, mise, npm, etc. Maybe it
+    # should be changed to check if those are installed or not, but at
+    # the moment it's not a concern
     - name: User-specific tasks
       block:
-          # Mostly programming language packages 
+        # Mostly programming language packages
         - name: Install mise packages
           tags: mise_packages
-          ansible.builtin.command: "mise use --global {{ item }}"  # Just set/use these packages as global, diff settings can be achieved through mise configuration files 
+          # Just set/use these packages as global, diff settings can be achieved through mise configuration files
+          ansible.builtin.command: "mise use --global {{ item }}"
           environment: "{{ mise_env }}"
           loop: "{{ mise_packages }}"
 
@@ -158,7 +154,8 @@
             state: present
             global: true
           environment:
-            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"
           loop: "{{ npm_packages }}"
 
         - name: Install gem based packages
@@ -168,7 +165,8 @@
             state: present
             user_install: false  # make it global
           environment:
-            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"
           loop: "{{ gem_packages }}"
 
         - name: Install pip based packages
@@ -177,13 +175,15 @@
             name: "{{ item }}"
             state: present
           environment:
-            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"
           loop: "{{ pip_packages }}"
 
         - name: Install golang based packages
-          ansible.builtin.shell: "go install {{ item }}"
+          ansible.builtin.command: "go install {{ item }}"
           environment:
-            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"
           loop: "{{ go_packages }}"
 
         - name: Install cargo based packages
@@ -192,7 +192,8 @@
             name: "{{ item }}"
             state: present
           environment:
-            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"  # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            # mise is not activated and running environment is not aware of the current/global mise configuration, simple solution is to add path to mise shims
+            PATH: "{{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims:{{ ansible_facts['env']['PATH'] }}"
           loop: "{{ cargo_packages }}"
 
         - name: Pull container images
@@ -200,9 +201,8 @@
             name: "{{ item }}"
           loop: "{{ container_images }}"
 
-
-          # Override vars from outside if needed 
-          # $ ansible-playbook --tags dotfiles --extra-vars "dotfiles_force=true dotfiles_git_branch=workstation" workstation.yml
+        # Override vars from outside if needed
+        # $ ansible-playbook --tags dotfiles --extra-vars "dotfiles_force=true dotfiles_git_branch=workstation" workstation.yml
         - name: Set up dot files (configs)
           tags: dotfiles
           vars:
@@ -220,7 +220,7 @@
                 repo: "{{ dotfiles_git_url }}"
                 dest: "{{ dotfiles_dir }}"
                 version: "{{ dotfiles_git_branch }}"
-                update: yes
+                update: true
 
             - name: Find all files in repo
               ansible.builtin.find:
